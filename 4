@@ -1,9 +1,10 @@
 -- File: PlayerController.lua
--- Parent: StarterPlayer/StarterPlayerScripts
+-- Parent: StarterPlayerScripts
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
@@ -15,13 +16,23 @@ local digRemote = ReplicatedStorage:WaitForChild("DigGround")
 local equippedTool = nil
 local isAnimating = false
 
+-- Создание перекрестия
+local crosshair = Instance.new("Part")
+crosshair.Size = Vector3.new(0.5, 0.5, 0.5)
+crosshair.Transparency = 0.5
+crosshair.Anchored = true
+crosshair.CanCollide = false
+crosshair.Color = Color3.fromRGB(0, 255, 0)
+crosshair.TopSurface = Enum.SurfaceType.Smooth
+crosshair.BottomSurface = Enum.SurfaceType.Smooth
+crosshair.Parent = workspace
+
 local function setFirstPersonView()
 	local camera = workspace.CurrentCamera
 	camera.CameraSubject = humanoid
 	camera.CameraType = Enum.CameraType.Custom
 end
 
--- Анимации (если у тебя есть)
 local chopAnim, digAnim
 pcall(function()
 	chopAnim = humanoid.Animator:LoadAnimation(ReplicatedStorage:WaitForChild("ChopAnimation"))
@@ -30,6 +41,8 @@ end)
 
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
 	if gameProcessedEvent then return end
+
+	-- Действие для топора и лопаты (левая кнопка мыши)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 and not isAnimating then
 		local target = mouse.Target
 		if equippedTool == "Axe" and target and target.Parent and target.Parent.Name == "Trees" then
@@ -45,6 +58,40 @@ UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
 			task.wait(1)
 			isAnimating = false
 		end
+	end
+	
+	-- Действие для размещения блоков (правая кнопка мыши)
+	if input.UserInputType == Enum.UserInputType.MouseButton2 and equippedTool ~= "Axe" and equippedTool ~= "Shovel" then
+		local ray = Ray.new(mouse.UnitRay.Origin, mouse.UnitRay.Direction * 100)
+		local hit, position, normal = workspace:FindPartOnRay(ray)
+		
+		if hit and equippedTool then
+			local buildPart = equippedTool:FindFirstChild("Handle")
+			if buildPart then
+				local newBlock = buildPart:Clone()
+				newBlock.Name = equippedTool.Name
+				newBlock.Anchored = false
+				newBlock.CFrame = CFrame.new(position) * CFrame.new(normal * (newBlock.Size.Y / 2))
+				newBlock.Parent = workspace
+				equippedTool:Destroy()
+			end
+		end
+	end
+end)
+
+RunService.RenderStepped:Connect(function()
+	if equippedTool and equippedTool ~= "Axe" and equippedTool ~= "Shovel" then
+		local ray = Ray.new(mouse.UnitRay.Origin, mouse.UnitRay.Direction * 100)
+		local hit, position, normal = workspace:FindPartOnRay(ray)
+		
+		if hit then
+			crosshair.Position = position + normal * 0.1
+			crosshair.Visible = true
+		else
+			crosshair.Visible = false
+		end
+	else
+		crosshair.Visible = false
 	end
 end)
 
