@@ -1,0 +1,82 @@
+-- File: WorldGenerator.lua
+-- Parent: ServerScriptService
+
+local ServerStorage = game:GetService("ServerStorage")
+local WORLD_SIZE = 5000
+local WORLD_DEPTH = 1000
+local TERRAIN_SCALE = 200
+local TREE_SPAWN_CHANCE = 0.005
+local treePrototypes = {}
+
+local function createBlock(position, size, color, material, parent)
+	local part = Instance.new("Part")
+	part.Size = size
+	part.Position = position
+	part.Color = color
+	part.Material = material
+	part.Anchored = true
+	part.TopSurface = Enum.SurfaceType.Smooth
+	part.BottomSurface = Enum.SurfaceType.Smooth
+	part.Parent = parent
+	return part
+end
+
+local function perlinNoise(x, y, scale)
+	local noise = math.noise(x / scale, y / scale)
+	return noise * 20
+end
+
+local function generateWorld()
+	print("Начинаю генерацию мира...")
+	local startTime = tick()
+	
+	local terrainFolder = Instance.new("Folder")
+	terrainFolder.Name = "Terrain"
+	terrainFolder.Parent = workspace
+	
+	local treesFolder = Instance.new("Folder")
+	treesFolder.Name = "Trees"
+	treesFolder.Parent = workspace
+	
+	treePrototypes = ServerStorage:WaitForChild("Trees"):GetChildren()
+
+	for x = -WORLD_SIZE / 2, WORLD_SIZE / 2, 2 do
+		for z = -WORLD_SIZE / 2, WORLD_SIZE / 2, 2 do
+			local height = perlinNoise(x, z, TERRAIN_SCALE)
+			local yPos = height - 1
+			
+			local groundBlock = createBlock(
+				Vector3.new(x, yPos, z),
+				Vector3.new(2, 2, 2),
+				Color3.fromRGB(80, 160, 80),
+				Enum.Material.Grass,
+				terrainFolder
+			)
+			
+			for y = yPos - 2, yPos - WORLD_DEPTH, -2 do
+				createBlock(
+					Vector3.new(x, y, z),
+					Vector3.new(2, 2, 2),
+					Color3.fromRGB(117, 86, 47),
+					Enum.Material.Wood,
+					terrainFolder
+				)
+			end
+			
+			if #treePrototypes > 0 and math.random() < TREE_SPAWN_CHANCE then
+				local treeModel = treePrototypes[math.random(1, #treePrototypes)]:Clone()
+				local ray = Ray.new(Vector3.new(x, yPos + 20, z), Vector3.new(0, -50, 0))
+				local hit, position = workspace:FindPartOnRay(ray, treesFolder)
+				
+				if hit and hit.Material == Enum.Material.Grass then
+					treeModel:SetPrimaryPartCFrame(CFrame.new(position.X, position.Y + 2, position.Z))
+					treeModel.Parent = treesFolder
+				end
+			end
+		end
+	end
+	
+	print("Генерация мира завершена.")
+end
+
+generateWorld()
