@@ -90,6 +90,12 @@ local function setupEnvironment()
 	uiListLayout.Parent = craftingFrame
 	uiListLayout.Padding = UDim.new(0, 10)
 	
+	local starterLog = Instance.new("Part")
+	starterLog.Name = "Log"
+	starterLog.Size = Vector3.new(2, 2, 2)
+	starterLog.Color = Color3.fromRGB(117, 86, 47)
+	starterLog.Parent = ServerStorage
+	
 	print("Настройка окружения завершена.")
 end
 
