@@ -1,0 +1,96 @@
+-- File: SetupScript.lua
+-- Parent: ServerScriptService
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
+local StarterGui = game:GetService("StarterGui")
+local StarterPack = game:GetService("StarterPack")
+
+local function setupEnvironment()
+	print("Начинаю настройку окружения...")
+	
+	-- Создание RemoteEvents
+	local remoteEvents = {"ChopTree", "DigGround", "CraftItem"}
+	for _, eventName in ipairs(remoteEvents) do
+		local remoteEvent = Instance.new("RemoteEvent")
+		remoteEvent.Name = eventName
+		remoteEvent.Parent = ReplicatedStorage
+	end
+	
+	-- Создание папки для деревьев
+	local treesFolder = Instance.new("Folder")
+	treesFolder.Name = "Trees"
+	treesFolder.Parent = ServerStorage
+
+	-- Создание моделей деревьев
+	local function createTreeType(name, trunkSize, trunkColor, leavesSize, leavesColor)
+		local model = Instance.new("Model")
+		model.Name = name
+		
+		local trunk = Instance.new("Part")
+		trunk.Size = trunkSize
+		trunk.Color = trunkColor
+		trunk.Material = Enum.Material.Wood
+		trunk.Anchored = true
+		trunk.TopSurface = Enum.SurfaceType.Smooth
+		trunk.BottomSurface = Enum.SurfaceType.Smooth
+		trunk.Parent = model
+		model.PrimaryPart = trunk
+		
+		local leaves = Instance.new("Part")
+		leaves.Size = leavesSize
+		leaves.Position = Vector3.new(0, trunkSize.Y/2 + leavesSize.Y/2, 0)
+		leaves.Color = leavesColor
+		leaves.Material = Enum.Material.LeafyGrass
+		leaves.Anchored = true
+		leaves.TopSurface = Enum.SurfaceType.Smooth
+		leaves.BottomSurface = Enum.SurfaceType.Smooth
+		leaves.Parent = model
+		
+		local weld = Instance.new("WeldConstraint")
+		weld.Part0 = trunk
+		weld.Part1 = leaves
+		weld.Parent = model
+		
+		model.Parent = treesFolder
+	end
+
+	createTreeType("SmallTree", Vector3.new(4, 15, 4), Color3.fromRGB(117, 86, 47), Vector3.new(12, 12, 12), Color3.fromRGB(34, 139, 34))
+	createTreeType("BigTree", Vector3.new(5, 20, 5), Color3.fromRGB(101, 67, 33), Vector3.new(15, 15, 15), Color3.fromRGB(60, 179, 113))
+	
+	-- Создание инструментов
+	local toolNames = {"Axe", "Shovel"}
+	for _, toolName in ipairs(toolNames) do
+		local tool = Instance.new("Tool")
+		tool.Name = toolName
+		tool.Parent = StarterPack
+	end
+	
+	-- Создание GUI
+	local craftingUI = Instance.new("ScreenGui")
+	craftingUI.Name = "CraftingUI"
+	craftingUI.Parent = StarterGui
+	
+	local workbenchButton = Instance.new("TextButton")
+	workbenchButton.Name = "WorkbenchButton"
+	workbenchButton.Size = UDim2.new(0.1, 0, 0.05, 0)
+	workbenchButton.Position = UDim2.new(0.8, 0, 0.5, 0)
+	workbenchButton.Text = "Workbench"
+	workbenchButton.Parent = craftingUI
+	
+	local craftingFrame = Instance.new("Frame")
+	craftingFrame.Name = "CraftingFrame"
+	craftingFrame.Size = UDim2.new(0.4, 0, 0.6, 0)
+	craftingFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
+	craftingFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	craftingFrame.Visible = false
+	craftingFrame.Parent = craftingUI
+	
+	local uiListLayout = Instance.new("UIListLayout")
+	uiListLayout.Parent = craftingFrame
+	uiListLayout.Padding = UDim.new(0, 10)
+	
+	print("Настройка окружения завершена.")
+end
+
+setupEnvironment()
