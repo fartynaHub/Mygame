@@ -1,0 +1,88 @@
+-- File: GameLogic.lua
+-- Parent: ServerScriptService
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local DebrisService = game:GetService("Debris")
+
+local chopRemote = ReplicatedStorage:WaitForChild("ChopTree")
+local digRemote = ReplicatedStorage:WaitForChild("DigGround")
+local craftRemote = ReplicatedStorage:WaitForChild("CraftItem")
+
+-- Логика рубки и копания
+chopRemote.OnServerEvent:Connect(function(player, tree)
+	if not tree or not tree:IsA("Model") or not tree.Parent then
+		return
+	end
+	local logCount = math.clamp(math.ceil(tree.PrimaryPart.Size.Y / 4), 2, 5)
+	for i = 1, logCount do
+		local log = Instance.new("Part")
+		log.Name = "Log"
+		log.Size = Vector3.new(2, 2, 2)
+		log.Position = tree.PrimaryPart.Position + Vector3.new(math.random(-5, 5), 5, math.random(-5, 5))
+		log.Color = Color3.fromRGB(117, 86, 47)
+		log.Material = Enum.Material.Wood
+		log.CanCollide = true
+		log.Massless = false
+		log.Anchored = false
+		log.Parent = player.Backpack 
+		DebrisService:AddItem(log, 20)
+	end
+	tree:Destroy()
+end)
+
+digRemote.OnServerEvent:Connect(function(player, target)
+	if not target or not target:IsA("Part") or not target.Parent or (target.Material ~= Enum.Material.Wood and target.Material ~= Enum.Material.Grass) then
+		return
+	end
+	target:Destroy()
+end)
+
+-- Логика крафта
+local recipes = {
+	["Wooden Plank"] = {
+		recipe = { ["Log"] = 1 },
+		output = { name = "Wooden Plank", size = Vector3.new(4, 1, 4), color = Color3.fromRGB(180, 150, 120) }
+	},
+	["Wooden Wall"] = {
+		recipe = { ["Wooden Plank"] = 5 },
+		output = { name = "Wooden Wall", size = Vector3.new(10, 10, 1), color = Color3.fromRGB(180, 150, 120) }
+	},
+	-- Добавь больше рецептов по аналогии
+}
+
+craftRemote.OnServerEvent:Connect(function(player, itemName)
+	local recipe = recipes[itemName]
+	if not recipe then return end
+
+	local hasResources = true
+	local backpack = player:WaitForChild("Backpack")
+	for resource, amount in pairs(recipe.recipe) do
+		local count = 0
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item.Name == resource then
+				count = count + 1
+			end
+		end
+		if count < amount then
+			hasResources = false
+			break
+		end
+	end
+
+	if hasResources then
+		for resource, amount in pairs(recipe.recipe) do
+			for i = 1, amount do
+				local item = backpack:FindFirstChild(resource)
+				if item then item:Destroy() end
+			end
+		end
+		
+		local craftedItem = Instance.new("Part")
+		craftedItem.Name = recipe.output.name
+		craftedItem.Size = recipe.output.size
+		craftedItem.Color = recipe.output.color
+		craftedItem.Anchored = false
+		craftedItem.CanCollide = true
+		craftedItem.Parent = backpack
+	end
+end)
