@@ -1,0 +1,48 @@
+-- File: CraftingSystem.lua
+-- Parent: StarterGui/CraftingUI/CraftingFrame
+
+local Player = game.Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local craftRemote = ReplicatedStorage:WaitForChild("CraftItem")
+
+local workbenchButton = script.Parent.Parent:WaitForChild("WorkbenchButton")
+local craftingFrame = script.Parent
+
+local recipes = {
+	["Wooden Plank"] = {
+		recipe = { ["Log"] = 1 }
+	},
+	["Wooden Wall"] = {
+		recipe = { ["Wooden Plank"] = 5 }
+	},
+}
+
+local function createRecipeButton(recipeName, recipeData, parent)
+	local button = Instance.new("TextButton")
+	button.Size = UDim2.new(0.9, 0, 0.1, 0)
+	button.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
+	button.Text = recipeName
+	button.Parent = parent
+	button.MouseButton1Click:Connect(function()
+		craftRemote:FireServer(recipeName)
+	end)
+end
+
+local function updateCraftingGUI()
+	for _, child in ipairs(craftingFrame:GetChildren()) do
+		if child:IsA("TextButton") then
+			child:Destroy()
+		end
+	end
+	for name, data in pairs(recipes) do
+		createRecipeButton(name, data, craftingFrame)
+	end
+end
+
+workbenchButton.MouseButton1Click:Connect(function()
+	craftingFrame.Visible = not craftingFrame.Visible
+	if craftingFrame.Visible then
+		updateCraftingGUI()
+	end
+end)
