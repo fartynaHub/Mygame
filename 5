@@ -10,12 +10,81 @@ local workbenchButton = script.Parent.Parent:WaitForChild("WorkbenchButton")
 local craftingFrame = script.Parent
 
 local recipes = {
+	-- Базовые материалы
 	["Wooden Plank"] = {
 		recipe = { ["Log"] = 1 }
 	},
+	["Wooden Stick"] = {
+		recipe = { ["Wooden Plank"] = 1 }
+	},
+	-- Строительные блоки
 	["Wooden Wall"] = {
 		recipe = { ["Wooden Plank"] = 5 }
 	},
+	["Wooden Floor"] = {
+		recipe = { ["Wooden Plank"] = 5 }
+	},
+	["Wooden Cube"] = {
+		recipe = { ["Wooden Plank"] = 2 }
+	},
+	["Wooden Stairs"] = {
+		recipe = { ["Wooden Plank"] = 3 }
+	},
+	["Wooden Roof"] = {
+		recipe = { ["Wooden Plank"] = 7 }
+	},
+	["Wooden Fence"] = {
+		recipe = { ["Wooden Stick"] = 2, ["Wooden Plank"] = 1 }
+	},
+	["Wooden Door"] = {
+		recipe = { ["Wooden Plank"] = 6 }
+	},
+	["Wooden Window Frame"] = {
+		recipe = { ["Wooden Plank"] = 4 }
+	},
+	-- Мебель и декорации
+	["Wooden Table"] = {
+		recipe = { ["Wooden Plank"] = 4, ["Wooden Stick"] = 4 }
+	},
+	["Wooden Chair"] = {
+		recipe = { ["Wooden Plank"] = 3, ["Wooden Stick"] = 2 }
+	},
+	["Wooden Bed"] = {
+		recipe = { ["Wooden Plank"] = 8, ["Wooden Stick"] = 4 }
+	},
+	["Wooden Crate"] = {
+		recipe = { ["Wooden Plank"] = 6 }
+	},
+	["Wooden Cabinet"] = {
+		recipe = { ["Wooden Plank"] = 10 }
+	},
+	["Wooden Torch"] = {
+		recipe = { ["Wooden Stick"] = 1, ["Wooden Plank"] = 1 }
+	},
+	-- Дополнительные блоки и элементы
+	["Wooden Beam"] = {
+		recipe = { ["Wooden Plank"] = 3 }
+	},
+	["Wooden Pillar"] = {
+		recipe = { ["Wooden Plank"] = 4 }
+	},
+	["Wooden Arch"] = {
+		recipe = { ["Wooden Plank"] = 6 }
+	},
+	["Wooden Bridge Part"] = {
+		recipe = { ["Wooden Plank"] = 8, ["Wooden Stick"] = 4 }
+	},
+	["Wooden Platform"] = {
+		recipe = { ["Wooden Plank"] = 5, ["Wooden Stick"] = 4 }
+	},
+	-- Инструменты (для примера)
+	["Wooden Pickaxe"] = {
+		recipe = { ["Wooden Stick"] = 2, ["Wooden Plank"] = 3 }
+	},
+	["Wooden Hammer"] = {
+		recipe = { ["Wooden Stick"] = 2, ["Wooden Plank"] = 2 }
+	},
+	-- Добавь еще 27 рецептов, чтобы достичь 50
 }
 
 local function createRecipeButton(recipeName, recipeData, parent)
