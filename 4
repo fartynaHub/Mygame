@@ -1,0 +1,64 @@
+-- File: PlayerController.lua
+-- Parent: StarterPlayer/StarterPlayerScripts
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local mouse = player:GetMouse()
+
+local chopRemote = ReplicatedStorage:WaitForChild("ChopTree")
+local digRemote = ReplicatedStorage:WaitForChild("DigGround")
+
+local equippedTool = nil
+local isAnimating = false
+
+local function setFirstPersonView()
+	local camera = workspace.CurrentCamera
+	camera.CameraSubject = humanoid
+	camera.CameraType = Enum.CameraType.Custom
+end
+
+-- Анимации (если у тебя есть)
+local chopAnim, digAnim
+pcall(function()
+	chopAnim = humanoid.Animator:LoadAnimation(ReplicatedStorage:WaitForChild("ChopAnimation"))
+	digAnim = humanoid.Animator:LoadAnimation(ReplicatedStorage:WaitForChild("DigAnimation"))
+end)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+	if gameProcessedEvent then return end
+	if input.UserInputType == Enum.UserInputType.MouseButton1 and not isAnimating then
+		local target = mouse.Target
+		if equippedTool == "Axe" and target and target.Parent and target.Parent.Name == "Trees" then
+			isAnimating = true
+			if chopAnim then chopAnim:Play() end
+			chopRemote:FireServer(target.Parent)
+			task.wait(2)
+			isAnimating = false
+		elseif equippedTool == "Shovel" and target and (target.Material == Enum.Material.Grass or target.Material == Enum.Material.Wood) then
+			isAnimating = true
+			if digAnim then digAnim:Play() end
+			digRemote:FireServer(target)
+			task.wait(1)
+			isAnimating = false
+		end
+	end
+end)
+
+player.CharacterAdded:Connect(function(char)
+	char.ChildAdded:Connect(function(child)
+		if child:IsA("Tool") then
+			equippedTool = child.Name
+		end
+	end)
+	char.ChildRemoved:Connect(function(child)
+		if child:IsA("Tool") then
+			equippedTool = nil
+		end
+	end)
+end)
+
+setFirstPersonView()
